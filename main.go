@@ -4,12 +4,21 @@ import (
 	"fmt"
 	"runtime"
 	"sync"
-	"go-introduce/go-module-test"
+	"net/http"
+	"os"
+	"github.com/Supparerk23/go-introduce/repositories"
+	"github.com/labstack/echo/v4"
+	"github.com/subosito/gotenv"
 	)
 
 var wg sync.WaitGroup
 
 func main() {
+
+	gotenv.Load()
+
+	port := os.Getenv("PORT")
+	addr := fmt.Sprintf(":%s", port)
 
 	fmt.Println("OS\t\t",runtime.GOOS)
 	fmt.Println("ARCH\t\t",runtime.GOARCH)
@@ -33,7 +42,17 @@ func main() {
 
 	var endMessage string = hello.Hello()
 
-	fmt.Println("end : ",endMessage)
+	e := echo.New()
+	e.GET("/", func(c echo.Context) error {
+		return c.String(http.StatusOK,endMessage)
+	})
+
+	// Initial API
+	api := e.Group("/api")
+
+	propertyAPI := api.Group("/property")
+
+	e.Logger.Fatal(e.Start(addr))
 }
 
 func foo(prefix int) {
